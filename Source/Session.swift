@@ -1137,7 +1137,7 @@ open class Session {
 
     // MARK: - Adapters and Retriers
 
-    func adapter(for request: Request) -> RequestAdapter? {
+    func adapter(for request: Request) -> RequestAdapterV2? {
         if let requestInterceptor = request.interceptor, let sessionInterceptor = interceptor {
             return Interceptor(adapters: [requestInterceptor, sessionInterceptor])
         } else {

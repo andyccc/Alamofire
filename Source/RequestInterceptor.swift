@@ -35,6 +35,24 @@ public protocol RequestAdapter {
     func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void)
 }
 
+/// A type that can inspect and optionally adapt a `URLRequest` in some manner if necessary.
+public protocol RequestAdapterV2: RequestAdapter {
+    /// Inspects and adapts the specified `URLRequest` in some manner and calls the completion handler with the Result.
+    ///
+    /// - Parameters:
+    ///   - urlRequest: The `URLRequest` to adapt.
+    ///   - request:    The `Request` being adapted.
+    ///   - session:    The `Session` that will execute the `URLRequest`.
+    ///   - completion: The completion handler that must be called when adaptation is complete.
+    func adapt(_ urlRequest: URLRequest, for request: Request, session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void)
+}
+
+extension RequestAdapterV2 {
+    public func adapt(_ urlRequest: URLRequest, for request: Request, session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
+        adapt(urlRequest, for: session, completion: completion)
+    }
+}
+
 // MARK: -
 
 /// Outcome of determination whether retry is necessary.
@@ -90,10 +108,17 @@ public protocol RequestRetrier {
 // MARK: -
 
 /// Type that provides both `RequestAdapter` and `RequestRetrier` functionality.
-public protocol RequestInterceptor: RequestAdapter, RequestRetrier {}
+public protocol RequestInterceptor: RequestAdapterV2, RequestRetrier {}
 
 extension RequestInterceptor {
     public func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
+        completion(.success(urlRequest))
+    }
+
+    public func adapt(_ urlRequest: URLRequest,
+                      for request: Request,
+                      session: Session,
+                      completion: @escaping (Result<URLRequest, Error>) -> Void) {
         completion(.success(urlRequest))
     }
 
